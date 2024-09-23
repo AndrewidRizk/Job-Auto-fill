@@ -32,20 +32,21 @@ document.getElementById('autofillButton').addEventListener('click', () => {
 
         // Mapping of input fields
         const inputMapping = {
-          name: ['name', 'full name', 'legal full name'],
+          location: ['address', 'location'],
           firstname: ['first name', 'legal first name'],
           email: ['username', 'email', 'e-mail', 'login'],
           phone: ['phone', 'mobile', 'telephone', 'number'],
           linkedin: ['linkedin'],
           github: ['github'],
           website: ['website', 'portfolio', 'other website'],
-          location: ['address', 'location'],
           city: ['city'],
           province: ['state', 'province'],
           country: ["country"],
           university: ["university", "school"],
           postalcode: ['zip', 'postal', 'postal code', 'zip code'],
-          graduationDate: ['Expected']
+          name: ['name', 'full name', 'legal full name'],
+          graduationDate: ['Expected'],
+          study: ['Area(s) of study']
 
         };
 
