@@ -25,7 +25,7 @@ function autofillFunction() {
     phone: "6475627770",
     linkedin: "https://linkedin.com/in/andrewrizk",
     github: "https://github.com/andrewrizk",
-    website: "https://andrewrizk.com",
+    website: "https://androrizk.com/",
     location: "26 George Robinson dr, Brampton, ON, L6Y 2M7",
     city: "Brampton",
     province: "Ontario",
