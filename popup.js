@@ -1,61 +1,21 @@
-document.getElementById('capture').addEventListener('click', () => {
-  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    chrome.tabs.sendMessage(tabs[0].id, { action: 'capture' });
-  });
-});
-
-// Function to fill fields based on labels and other attributes
+// Load JSON data from the file and pass it to the autofill function
 document.getElementById('autofillButton').addEventListener('click', () => {
   chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-    chrome.scripting.executeScript({
-      target: { tabId: tabs[0].id },
-      func: autofillFunction
-    });
+    fetch(chrome.runtime.getURL('data.json'))
+      .then(response => response.json())
+      .then(data => {
+        chrome.scripting.executeScript({
+          target: { tabId: tabs[0].id },
+          func: autofillFunction,
+          args: [data.userInfo, data.inputMapping] // Pass userInfo and inputMapping as arguments
+        });
+      })
+      .catch(error => console.error('Error loading JSON data:', error));
   });
 });
 
-// Define the autofill function
-function autofillFunction() {
-  // User information to autofill
-  const userInfo = {
-    name: "Andro Rizk",
-    firstname: 'Andro',
-    lastname: 'Rizk',
-    email: "androwmaged47@gmail.com",
-    phone: "6475627770",
-    linkedin: "https://linkedin.com/in/andrewrizk",
-    github: "https://github.com/andrewrizk",
-    website: "https://androrizk.com/",
-    location: "26 George Robinson dr, Brampton, ON, L6Y 2M7",
-    city: "Brampton",
-    province: "Ontario",
-    country: "Canada",
-    university: 'York University',
-    postalcode: "L6Y 2M7",
-    graduationDate: 'May 2026',
-    study: 'Computer Science'
-  };
-
-  // Mapping of input fields
-  const inputMapping = {
-    firstname: ['first name', 'legal first name', 'given name'],
-    location: ['address', 'location'],
-    lastname: ['last name', 'surname', 'family name'],
-    email: ['username', 'email', 'e-mail', 'login', 'email address'],
-    phone: ['phone', 'mobile', 'telephone', 'number'],
-    linkedin: ['linkedin'],
-    github: ['github'],
-    website: ['website', 'portfolio', 'other website'],
-    city: ['city'],
-    province: ['state', 'province'],
-    country: ["country"],
-    university: ["university", "school"],
-    postalcode: ['zip', 'postal', 'postal code', 'zip code'],
-    name: ['name', 'full name', 'legal full name'],
-    graduationDate: ['expected graduation date', 'graduation date', 'grad date'],
-    study: ['area(s) of study', 'major', 'field of study']
-  };
-
+// Define the autofill function that accepts userInfo and inputMapping as parameters
+function autofillFunction(userInfo, inputMapping) {
   // Arrays to store filled and unfilled fields
   const filledFields = [];
   const unfilledFields = [];
@@ -71,7 +31,6 @@ function autofillFunction() {
 
   // Function to fill fields based on labels, placeholder, or name attribute
   function fillFieldFromLabel(fieldKey, keywords, value, doc = document) {
-    // Escape special characters in keywords and join them with word boundaries
     const escapedKeywords = keywords.map(escapeRegExp);
     const fieldRegex = new RegExp('\\b(' + escapedKeywords.join('|') + ')\\b', 'i');
 
@@ -102,7 +61,7 @@ function autofillFunction() {
     const inputs = Array.from(doc.querySelectorAll('input, textarea, select'));
     for (const input of inputs) {
       if (filledInputs.has(input)) {
-        continue; // Skip if already filled
+        continue;
       }
       const placeholder = input.getAttribute('placeholder');
       const name = input.getAttribute('name');
@@ -126,12 +85,10 @@ function autofillFunction() {
     return false;
   }
 
-  // Function to fill input elements, handling different types
+  // Function to fill input elements
   function fillInputElement(input, value) {
     if (input.tagName.toLowerCase() === 'select') {
-      // Handle select (dropdown)
       const options = Array.from(input.options);
-      // Try to match the value with option text or value
       let matchingOption = options.find(option => new RegExp(`^${escapeRegExp(value)}$`, 'i').test(option.text.trim()));
       if (!matchingOption) {
         matchingOption = options.find(option => new RegExp(`^${escapeRegExp(value)}$`, 'i').test(option.value.trim()));
@@ -140,17 +97,8 @@ function autofillFunction() {
         input.value = matchingOption.value;
         input.dispatchEvent(new Event('change', { bubbles: true }));
         return true;
-      } else {
-        // If exact match not found, try partial match
-        matchingOption = options.find(option => new RegExp(escapeRegExp(value), 'i').test(option.text));
-        if (matchingOption) {
-          input.value = matchingOption.value;
-          input.dispatchEvent(new Event('change', { bubbles: true }));
-          return true;
-        }
       }
     } else {
-      // Handle input and textarea
       input.value = value;
       input.dispatchEvent(new Event('input', { bubbles: true }));
       return true;
@@ -158,15 +106,12 @@ function autofillFunction() {
     return false;
   }
 
-  // Function to fill fields in a document and its accessible iframes
+  // Fill fields in the main document
   function fillFieldsInDocument(doc) {
-    // Fill each field based on the mapping in this document
     function fillField(fieldKey, keywords, value) {
       const success = fillFieldFromLabel(fieldKey, keywords, value, doc);
-      if (!success) {
-        if (!unfilledFields.includes(fieldKey)) {
-          unfilledFields.push(fieldKey);
-        }
+      if (!success && !unfilledFields.includes(fieldKey)) {
+        unfilledFields.push(fieldKey);
       }
     }
 
@@ -174,7 +119,7 @@ function autofillFunction() {
       fillField(key, inputMapping[key], userInfo[key] || '');
     }
 
-    // Recursively fill fields in accessible iframes
+    // Recursively fill fields in iframes
     const iframes = doc.querySelectorAll('iframe');
     for (let iframe of iframes) {
       try {
@@ -188,7 +133,6 @@ function autofillFunction() {
     }
   }
 
-  // Start filling fields from the main document
   fillFieldsInDocument(document);
 
   // Calculate the percentage of fields filled

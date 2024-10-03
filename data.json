@@ -1,0 +1,39 @@
+{
+    "userInfo": {
+      "name": "Andro Rizk",
+      "firstname": "Andro",
+      "lastname": "Rizk",
+      "email": "androwmaged47@gmail.com",
+      "phone": "6475627770",
+      "linkedin": "https://linkedin.com/in/andrewrizk",
+      "github": "https://github.com/andrewrizk",
+      "website": "https://androrizk.com/",
+      "location": "26 George Robinson dr, Brampton, ON, L6Y 2M7",
+      "city": "Brampton",
+      "province": "Ontario",
+      "country": "Canada",
+      "university": "York University",
+      "postalcode": "L6Y 2M7",
+      "graduationDate": "May 2026",
+      "study": "Computer Science"
+    },
+    "inputMapping": {
+      "firstname": ["first name", "legal first name", "given name"],
+      "location": ["address", "location"],
+      "lastname": ["last name", "surname", "family name"],
+      "email": ["username", "email", "e-mail", "login", "email address"],
+      "phone": ["phone", "mobile", "telephone", "number"],
+      "linkedin": ["linkedin"],
+      "github": ["github"],
+      "website": ["website", "portfolio", "other website"],
+      "city": ["city"],
+      "province": ["state", "province"],
+      "country": ["country"],
+      "university": ["university", "school"],
+      "postalcode": ["zip", "postal", "postal code", "zip code"],
+      "name": ["name", "full name", "legal full name"],
+      "graduationDate": ["expected graduation date", "graduation date", "grad date"],
+      "study": ["area(s) of study", "major", "field of study"]
+    }
+  }
+  
