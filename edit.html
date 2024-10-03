@@ -3,47 +3,38 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Edit Information</title>
+  <title>Edit Autofill Data</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="container">
-    <h2>Edit Autofill Information</h2>
+  <div class="edit-container">
+    <h2>Edit Autofill Data</h2>
     <form id="edit-form">
-      <!-- Personal Information Fields -->
-      <div class="form-group">
-        <label for="name">Name:</label>
-        <input type="text" id="name" placeholder="Name" />
+      <div id="data-container">
+        <!-- This div should exist for the script to populate data rows -->
       </div>
-      <div class="form-group">
-        <label for="email">Email:</label>
-        <input type="email" id="email" placeholder="Email" />
-      </div>
-      <div class="form-group">
-        <label for="linkedin">LinkedIn:</label>
-        <input type="text" id="linkedin" placeholder="LinkedIn" />
-      </div>
-      <div class="form-group">
-        <label for="github">GitHub:</label>
-        <input type="text" id="github" placeholder="GitHub" />
-      </div>
-
-      <!-- Add Section for Keyword Management -->
-      <div class="keywords-section">
-        <h3>Manage Keywords</h3>
-        <div id="keywords-container"></div>
-        <div class="form-group">
-          <label for="new-keyword">Add New Keyword:</label>
-          <input type="text" id="new-keyword" placeholder="e.g., username" />
-          <input type="text" id="new-value" placeholder="Value to Autofill" />
-          <button type="button" id="add-keyword">Add Keyword</button>
-        </div>
-      </div>
-
-      <!-- Save Button -->
-      <button type="button" id="save">Save Information</button>
+      <br>
+      <button type="button" id="add-new-entry" class="add-entry-btn">+ Add New Entry</button>
+      <br><br>
+      <button type="button" id="save" class="save-btn">Save Changes</button>
     </form>
   </div>
+
+  <!-- Modal for Adding New Entry -->
+  <div id="add-entry-modal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h3>Add New Entry</h3>
+      <label for="new-info-field">Info Field:</label>
+      <input type="text" id="new-info-field" placeholder="e.g., jobTitle"><br>
+      <label for="new-info-value">Info Value:</label>
+      <input type="text" id="new-info-value" placeholder="e.g., Software Developer"><br>
+      <label for="new-keywords">Keywords (comma-separated):</label>
+      <textarea id="new-keywords" placeholder="e.g., title, position, job"></textarea><br>
+      <button type="button" id="add-entry-btn" class="save-btn">Add Entry</button>
+    </div>
+  </div>
+
   <script src="edit.js"></script>
 </body>
 </html>

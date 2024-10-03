@@ -1,81 +1,149 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const form = document.getElementById('edit-form');
-  const keywordsContainer = document.getElementById('keywords-container');
-  const addKeywordButton = document.getElementById('add-keyword');
+  const dataContainer = document.getElementById('data-container');
+  const addNewEntryModal = document.getElementById('add-entry-modal');
+  const addNewEntryButton = document.getElementById('add-new-entry');
+  const addEntryBtn = document.getElementById('add-entry-btn');
+  let jsonData = {};
 
-  // Load stored data if available
-  let autofillData = JSON.parse(localStorage.getItem('autofillData')) || {
-    name: '',
-    email: '',
-    linkedin: '',
-    github: '',
-    keywords: {}
-  };
+  // Check if the dataContainer exists
+  if (!dataContainer) {
+    console.error('Error: data-container element not found in the DOM.');
+    return;
+  }
 
-  // Populate form fields with existing values
-  form.name.value = autofillData.name || '';
-  form.email.value = autofillData.email || '';
-  form.linkedin.value = autofillData.linkedin || '';
-  form.github.value = autofillData.github || '';
+  // Load JSON data from the file and display it
+  fetch(chrome.runtime.getURL('data.json'))
+    .then(response => response.json())
+    .then(data => {
+      jsonData = data;
+      populateDataContainer(jsonData);
+    })
+    .catch(error => console.error('Error loading JSON data:', error));
 
-  // Populate existing keywords
-  displayKeywords();
+  // Function to populate the container with userInfo and inputMapping data
+  function populateDataContainer(data) {
+    dataContainer.innerHTML = ''; // Clear the container
+
+    for (const field in data.userInfo) {
+      // Create a row container
+      const row = document.createElement('div');
+      row.classList.add('data-row');
+
+      // Create the User Info Field and Value
+      const userInfoField = document.createElement('span');
+      userInfoField.classList.add('info-field');
+      userInfoField.textContent = field;
+
+      const userInfoInput = document.createElement('input');
+      userInfoInput.type = 'text';
+      userInfoInput.value = data.userInfo[field];
+      userInfoInput.dataset.field = field; // Attach field name for reference
+      userInfoInput.classList.add('userinfo-input');
+
+      // Create a container for keywords
+      const keywordContainer = document.createElement('div');
+      keywordContainer.classList.add('keyword-container');
+
+      if (data.inputMapping[field]) {
+        data.inputMapping[field].forEach((keyword, index) => {
+          const keywordInput = document.createElement('input');
+          keywordInput.type = 'text';
+          keywordInput.value = keyword;
+          keywordInput.dataset.field = field; // Attach field name for reference
+          keywordInput.dataset.index = index; // Track index for this keyword
+          keywordInput.classList.add('keyword-input');
+          keywordContainer.appendChild(keywordInput);
+        });
+      }
+
+      // Add Keyword Button
+      const addKeywordBtn = document.createElement('button');
+      addKeywordBtn.type = 'button';
+      addKeywordBtn.textContent = '+';
+      addKeywordBtn.classList.add('add-keyword-btn');
+      addKeywordBtn.dataset.field = field; // Attach field name for adding keywords
+
+      addKeywordBtn.addEventListener('click', () => {
+        const newKeywordInput = document.createElement('input');
+        newKeywordInput.type = 'text';
+        newKeywordInput.placeholder = 'New keyword';
+        newKeywordInput.dataset.field = field;
+        newKeywordInput.classList.add('keyword-input');
+        keywordContainer.appendChild(newKeywordInput);
+      });
+
+      // Append elements to the row
+      row.appendChild(userInfoField);
+      row.appendChild(userInfoInput);
+      row.appendChild(keywordContainer);
+      row.appendChild(addKeywordBtn);
+
+      // Append the row to the main container
+      dataContainer.appendChild(row);
+    }
+  }
 
   // Save button functionality
   document.getElementById('save').addEventListener('click', () => {
-    autofillData.name = form.name.value;
-    autofillData.email = form.email.value;
-    autofillData.linkedin = form.linkedin.value;
-    autofillData.github = form.github.value;
+    // Read updated values from the UI
+    const userInfoInputs = document.querySelectorAll('.userinfo-input');
+    const keywordInputs = document.querySelectorAll('.keyword-input');
 
-    // Save data to localStorage
-    localStorage.setItem('autofillData', JSON.stringify(autofillData));
-    alert('Information saved successfully!');
+    userInfoInputs.forEach(input => {
+      const field = input.dataset.field;
+      jsonData.userInfo[field] = input.value; // Update userInfo values
+    });
+
+    // Clear and update the inputMapping
+    jsonData.inputMapping = {};
+
+    keywordInputs.forEach(input => {
+      const field = input.dataset.field;
+      if (!jsonData.inputMapping[field]) {
+        jsonData.inputMapping[field] = [];
+      }
+      jsonData.inputMapping[field].push(input.value); // Update keywords
+    });
+
+    // Save updated data to local storage or a server (if applicable)
+    saveJsonData(jsonData);
+    alert('Data saved successfully!');
   });
 
-  // Add new keyword functionality
-  addKeywordButton.addEventListener('click', () => {
-    const newKeyword = document.getElementById('new-keyword').value.trim();
-    const newValue = document.getElementById('new-value').value.trim();
-
-    if (newKeyword && newValue) {
-      autofillData.keywords[newKeyword] = newValue;
-      displayKeywords();
-      document.getElementById('new-keyword').value = '';
-      document.getElementById('new-value').value = '';
-      localStorage.setItem('autofillData', JSON.stringify(autofillData));
-    }
-  });
-
-  // Display keywords dynamically
-  function displayKeywords() {
-    keywordsContainer.innerHTML = ''; // Clear container
-    for (const [keyword, value] of Object.entries(autofillData.keywords)) {
-      const keywordDiv = document.createElement('div');
-      keywordDiv.classList.add('keyword-item');
-      keywordDiv.innerHTML = `
-        <span><strong>${keyword}:</strong> ${value}</span>
-        <button class="edit-btn">Edit</button>
-        <button class="delete-btn">Delete</button>
-      `;
-
-      // Add edit and delete functionality
-      keywordDiv.querySelector('.edit-btn').addEventListener('click', () => {
-        const newValue = prompt(`Edit value for "${keyword}"`, value);
-        if (newValue !== null) {
-          autofillData.keywords[keyword] = newValue;
-          displayKeywords();
-          localStorage.setItem('autofillData', JSON.stringify(autofillData));
-        }
-      });
-
-      keywordDiv.querySelector('.delete-btn').addEventListener('click', () => {
-        delete autofillData.keywords[keyword];
-        displayKeywords();
-        localStorage.setItem('autofillData', JSON.stringify(autofillData));
-      });
-
-      keywordsContainer.appendChild(keywordDiv);
-    }
+  // Function to save JSON data to local storage (for demo purposes)
+  function saveJsonData(data) {
+    localStorage.setItem('autofillData', JSON.stringify(data)); // You can replace this with actual file-saving logic
   }
+
+  // Handle adding new entries via modal
+  addNewEntryButton.addEventListener('click', () => {
+    addNewEntryModal.style.display = 'block';
+  });
+
+  addEntryBtn.addEventListener('click', () => {
+    const newInfoField = document.getElementById('new-info-field').value.trim();
+    const newInfoValue = document.getElementById('new-info-value').value.trim();
+    const newKeywords = document.getElementById('new-keywords').value.split(',').map(k => k.trim());
+
+    if (newInfoField && newInfoValue) {
+      jsonData.userInfo[newInfoField] = newInfoValue;
+      jsonData.inputMapping[newInfoField] = newKeywords;
+
+      // Update UI
+      populateDataContainer(jsonData);
+      saveJsonData(jsonData);
+      alert('New entry added successfully!');
+    }
+
+    // Close the modal and reset fields
+    addNewEntryModal.style.display = 'none';
+    document.getElementById('new-info-field').value = '';
+    document.getElementById('new-info-value').value = '';
+    document.getElementById('new-keywords').value = '';
+  });
+
+  // Close modal
+  document.querySelector('.close').addEventListener('click', () => {
+    addNewEntryModal.style.display = 'none';
+  });
 });
