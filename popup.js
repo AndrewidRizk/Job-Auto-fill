@@ -39,6 +39,7 @@ function autofillFunction() {
   // Mapping of input fields
   const inputMapping = {
     firstname: ['first name', 'legal first name', 'given name'],
+    location: ['address', 'location'],
     lastname: ['last name', 'surname', 'family name'],
     email: ['username', 'email', 'e-mail', 'login', 'email address'],
     phone: ['phone', 'mobile', 'telephone', 'number'],
@@ -52,8 +53,7 @@ function autofillFunction() {
     postalcode: ['zip', 'postal', 'postal code', 'zip code'],
     name: ['name', 'full name', 'legal full name'],
     graduationDate: ['expected graduation date', 'graduation date', 'grad date'],
-    study: ['area(s) of study', 'major', 'field of study'],
-    location: ['address', 'location']
+    study: ['area(s) of study', 'major', 'field of study']
   };
 
   // Arrays to store filled and unfilled fields
@@ -197,163 +197,205 @@ function autofillFunction() {
   const percentage = Math.round((successfulFills / totalFields) * 100);
 
   // Create the report with circular chart and progress bar
-  function createReport() {
-    // Remove existing report if any
-    const existingReport = document.getElementById('autofill-report');
-    if (existingReport) {
-      existingReport.remove();
-    }
-
-    // Create report container
-    const reportDiv = document.createElement('div');
-    reportDiv.id = 'autofill-report';
-    reportDiv.style.position = 'fixed';
-    reportDiv.style.bottom = '10px';
-    reportDiv.style.right = '10px';
-    reportDiv.style.backgroundColor = '#fff';
-    reportDiv.style.border = '1px solid #ccc';
-    reportDiv.style.padding = '15px';
-    reportDiv.style.borderRadius = '10px';
-    reportDiv.style.boxShadow = '0 0 15px rgba(0,0,0,0.2)';
-    reportDiv.style.zIndex = '9999';
-    reportDiv.style.fontFamily = 'Arial, sans-serif';
-    reportDiv.style.fontSize = '14px';
-    reportDiv.style.color = '#333';
-    reportDiv.style.maxWidth = '350px';
-    reportDiv.style.maxHeight = '450px';
-    reportDiv.style.overflowY = 'auto';
-    reportDiv.style.textAlign = 'center';
-
-    // Create circular percentage chart using SVG
-    const svgNS = "http://www.w3.org/2000/svg";
-    const chartSize = 100;
-    const radius = (chartSize / 2) - 5;
-    const circumference = 2 * Math.PI * radius;
-    const offset = circumference - (percentage / 100) * circumference;
-
-    const svg = document.createElementNS(svgNS, 'svg');
-    svg.setAttribute('width', chartSize);
-    svg.setAttribute('height', chartSize);
-    svg.style.display = 'block';
-    svg.style.margin = '0 auto';
-
-    // Background circle
-    const bgCircle = document.createElementNS(svgNS, 'circle');
-    bgCircle.setAttribute('cx', chartSize / 2);
-    bgCircle.setAttribute('cy', chartSize / 2);
-    bgCircle.setAttribute('r', radius);
-    bgCircle.setAttribute('fill', 'none');
-    bgCircle.setAttribute('stroke', '#e6e6e6');
-    bgCircle.setAttribute('stroke-width', '10');
-    svg.appendChild(bgCircle);
-
-    // Foreground circle
-    const fgCircle = document.createElementNS(svgNS, 'circle');
-    fgCircle.setAttribute('cx', chartSize / 2);
-    fgCircle.setAttribute('cy', chartSize / 2);
-    fgCircle.setAttribute('r', radius);
-    fgCircle.setAttribute('fill', 'none');
-    fgCircle.setAttribute('stroke', '#4caf50');
-    fgCircle.setAttribute('stroke-width', '10');
-    fgCircle.setAttribute('stroke-dasharray', circumference);
-    fgCircle.setAttribute('stroke-dashoffset', offset);
-    fgCircle.setAttribute('transform', `rotate(-90 ${chartSize / 2} ${chartSize / 2})`);
-    svg.appendChild(fgCircle);
-
-    // Percentage text in the center
-    const percentageText = document.createElement('div');
-    percentageText.textContent = `${percentage}%`;
-    percentageText.style.position = 'absolute';
-    percentageText.style.top = '50%';
-    percentageText.style.left = '50%';
-    percentageText.style.transform = 'translate(-50%, -50%)';
-    percentageText.style.fontSize = '24px';
-    percentageText.style.fontWeight = 'bold';
-
-    const svgContainer = document.createElement('div');
-    svgContainer.style.position = 'relative';
-    svgContainer.style.display = 'inline-block';
-    svgContainer.appendChild(svg);
-    svgContainer.appendChild(percentageText);
-
-    // Progress bar
-    const progressBarContainer = document.createElement('div');
-    progressBarContainer.style.width = '100%';
-    progressBarContainer.style.backgroundColor = '#e6e6e6';
-    progressBarContainer.style.borderRadius = '5px';
-    progressBarContainer.style.marginTop = '15px';
-    progressBarContainer.style.height = '20px';
-    progressBarContainer.style.overflow = 'hidden';
-
-    const progressBar = document.createElement('div');
-    progressBar.style.width = `${percentage}%`;
-    progressBar.style.height = '100%';
-    progressBar.style.backgroundColor = '#4caf50';
-
-    progressBarContainer.appendChild(progressBar);
-
-    // Success and error counts
-    const successCountText = document.createElement('p');
-    successCountText.textContent = `${successfulFills} field(s) filled successfully`;
-    successCountText.style.marginTop = '15px';
-
-    const errorCount = unfilledFields.length;
-    const errorText = document.createElement('p');
-    errorText.textContent = `${errorCount} field(s) not found`;
-
-    // List of filled fields
-    const filledFieldsList = document.createElement('ul');
-    filledFieldsList.style.listStyleType = 'disc';
-    filledFieldsList.style.marginTop = '10px';
-    filledFieldsList.style.paddingLeft = '20px';
-    filledFieldsList.style.textAlign = 'left';
-
-    const filledFieldsTitle = document.createElement('p');
-    filledFieldsTitle.textContent = 'Fields Filled:';
-    filledFieldsTitle.style.marginTop = '10px';
-    filledFieldsTitle.style.fontWeight = 'bold';
-
-    for (const field of filledFields) {
-      const li = document.createElement('li');
-      li.textContent = field;
-      filledFieldsList.appendChild(li);
-    }
-
-    // List of unfilled fields
-    const unfilledFieldsList = document.createElement('ul');
-    unfilledFieldsList.style.listStyleType = 'disc';
-    unfilledFieldsList.style.marginTop = '10px';
-    unfilledFieldsList.style.paddingLeft = '20px';
-    unfilledFieldsList.style.textAlign = 'left';
-
-    const unfilledFieldsTitle = document.createElement('p');
-    unfilledFieldsTitle.textContent = 'Fields Not Found:';
-    unfilledFieldsTitle.style.marginTop = '10px';
-    unfilledFieldsTitle.style.fontWeight = 'bold';
-
-    for (const field of unfilledFields) {
-      const li = document.createElement('li');
-      li.textContent = field;
-      unfilledFieldsList.appendChild(li);
-    }
-
-    // Append elements to report
-    reportDiv.appendChild(svgContainer);
-    reportDiv.appendChild(progressBarContainer);
-    reportDiv.appendChild(successCountText);
-    if (filledFields.length > 0) {
-      reportDiv.appendChild(filledFieldsTitle);
-      reportDiv.appendChild(filledFieldsList);
-    }
-    if (unfilledFields.length > 0) {
-      reportDiv.appendChild(errorText);
-      reportDiv.appendChild(unfilledFieldsTitle);
-      reportDiv.appendChild(unfilledFieldsList);
-    }
-
-    // Append to body
-    document.body.appendChild(reportDiv);
+function createReport() {
+  // Remove existing report if any
+  const existingReport = document.getElementById('autofill-report');
+  if (existingReport) {
+    existingReport.remove();
   }
+
+  // Create report container
+  const reportDiv = document.createElement('div');
+  reportDiv.id = 'autofill-report';
+  reportDiv.style.position = 'fixed';
+  reportDiv.style.bottom = '10px';
+  reportDiv.style.right = '10px';
+  reportDiv.style.backgroundColor = '#fff';
+  reportDiv.style.border = '3px solid #ccc';
+  reportDiv.style.padding = '15px';
+  reportDiv.style.borderRadius = '10px';
+  reportDiv.style.boxShadow = '0 0 15px rgba(0,0,0,0.2)';
+  reportDiv.style.zIndex = '9999';
+  reportDiv.style.fontFamily = 'Arial, sans-serif';
+  reportDiv.style.fontSize = '14px';
+  reportDiv.style.color = '#333';
+  reportDiv.style.maxWidth = '350px';
+  reportDiv.style.maxHeight = '450px';
+  reportDiv.style.overflowY = 'auto';
+  reportDiv.style.textAlign = 'center';
+
+// Minimize Button
+const minimizeButton = document.createElement('button');
+minimizeButton.innerHTML = '&#9660;'; // Down arrow symbol (initial state)
+minimizeButton.style.position = 'absolute';
+minimizeButton.style.top = '5px';
+minimizeButton.style.right = '3px';
+minimizeButton.style.background = 'transparent'; // No background
+minimizeButton.style.border = 'none'; // Remove border
+minimizeButton.style.fontSize = '16px';
+minimizeButton.style.cursor = 'pointer';
+minimizeButton.style.outline = 'none'; // Remove the default focus outline
+minimizeButton.style.width = '24px'; // Smaller button size
+minimizeButton.style.height = '24px';
+minimizeButton.style.display = 'flex';
+minimizeButton.style.alignItems = 'center';
+minimizeButton.style.justifyContent = 'center';
+minimizeButton.style.transition = 'all 0.3s ease'; // Smooth transition
+minimizeButton.style.borderRadius = '50%'; // Make it circular
+
+// Hover effect
+minimizeButton.onmouseover = () => {
+  minimizeButton.style.backgroundColor = '#f1f1f1'; // Light background on hover
+};
+minimizeButton.onmouseout = () => {
+  minimizeButton.style.backgroundColor = 'transparent'; // Revert to transparent
+};
+
+  // Event listener for minimizing the content
+  minimizeButton.addEventListener('click', () => {
+    const isVisible = reportContent.style.display !== 'none';
+    reportContent.style.display = isVisible ? 'none' : 'block';
+    minimizeButton.innerHTML = isVisible ? '&#9650;' : '&#9660;'; // Toggle between up and down arrow symbols
+  });
+
+  // Create a div for the content that can be hidden
+  const reportContent = document.createElement('div');
+  reportContent.id = 'report-content';
+
+  // Create circular percentage chart using SVG
+  const svgNS = "http://www.w3.org/2000/svg";
+  const chartSize = 100;
+  const radius = (chartSize / 2) - 5;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (percentage / 100) * circumference;
+
+  const svg = document.createElementNS(svgNS, 'svg');
+  svg.setAttribute('width', chartSize);
+  svg.setAttribute('height', chartSize);
+  svg.style.display = 'block';
+  svg.style.margin = '0 auto';
+
+  // Background circle
+  const bgCircle = document.createElementNS(svgNS, 'circle');
+  bgCircle.setAttribute('cx', chartSize / 2);
+  bgCircle.setAttribute('cy', chartSize / 2);
+  bgCircle.setAttribute('r', radius);
+  bgCircle.setAttribute('fill', 'none');
+  bgCircle.setAttribute('stroke', '#e6e6e6');
+  bgCircle.setAttribute('stroke-width', '10');
+  svg.appendChild(bgCircle);
+
+  // Foreground circle
+  const fgCircle = document.createElementNS(svgNS, 'circle');
+  fgCircle.setAttribute('cx', chartSize / 2);
+  fgCircle.setAttribute('cy', chartSize / 2);
+  fgCircle.setAttribute('r', radius);
+  fgCircle.setAttribute('fill', 'none');
+  fgCircle.setAttribute('stroke', '#4caf50');
+  fgCircle.setAttribute('stroke-width', '10');
+  fgCircle.setAttribute('stroke-dasharray', circumference);
+  fgCircle.setAttribute('stroke-dashoffset', offset);
+  fgCircle.setAttribute('transform', `rotate(-90 ${chartSize / 2} ${chartSize / 2})`);
+  svg.appendChild(fgCircle);
+
+  // Percentage text in the center
+  const percentageText = document.createElement('div');
+  percentageText.textContent = `${percentage}%`;
+  percentageText.style.position = 'absolute';
+  percentageText.style.top = '50%';
+  percentageText.style.left = '50%';
+  percentageText.style.transform = 'translate(-50%, -50%)';
+  percentageText.style.fontSize = '24px';
+  percentageText.style.fontWeight = 'bold';
+
+  const svgContainer = document.createElement('div');
+  svgContainer.style.position = 'relative';
+  svgContainer.style.display = 'inline-block';
+  svgContainer.appendChild(svg);
+  svgContainer.appendChild(percentageText);
+
+  // Progress bar
+  const progressBarContainer = document.createElement('div');
+  progressBarContainer.style.width = '100%';
+  progressBarContainer.style.backgroundColor = '#e6e6e6';
+  progressBarContainer.style.borderRadius = '5px';
+  progressBarContainer.style.marginTop = '15px';
+  progressBarContainer.style.height = '20px';
+  progressBarContainer.style.overflow = 'hidden';
+
+  const progressBar = document.createElement('div');
+  progressBar.style.width = `${percentage}%`;
+  progressBar.style.height = '100%';
+  progressBar.style.backgroundColor = '#4caf50';
+
+  progressBarContainer.appendChild(progressBar);
+
+  // Success and error counts
+  const successCountText = document.createElement('p');
+  successCountText.textContent = `${successfulFills} field(s) filled successfully`;
+  successCountText.style.marginTop = '15px';
+
+  const errorCount = unfilledFields.length;
+  const errorText = document.createElement('p');
+  errorText.textContent = `${errorCount} field(s) not found`;
+
+  // List of filled fields
+  const filledFieldsList = document.createElement('ul');
+  filledFieldsList.style.listStyleType = 'disc';
+  filledFieldsList.style.marginTop = '10px';
+  filledFieldsList.style.paddingLeft = '20px';
+  filledFieldsList.style.textAlign = 'left';
+
+  const filledFieldsTitle = document.createElement('p');
+  filledFieldsTitle.textContent = 'Fields Filled:';
+  filledFieldsTitle.style.marginTop = '10px';
+  filledFieldsTitle.style.fontWeight = 'bold';
+
+  for (const field of filledFields) {
+    const li = document.createElement('li');
+    li.textContent = field;
+    filledFieldsList.appendChild(li);
+  }
+
+  // List of unfilled fields
+  const unfilledFieldsList = document.createElement('ul');
+  unfilledFieldsList.style.listStyleType = 'disc';
+  unfilledFieldsList.style.marginTop = '10px';
+  unfilledFieldsList.style.paddingLeft = '20px';
+  unfilledFieldsList.style.textAlign = 'left';
+
+  const unfilledFieldsTitle = document.createElement('p');
+  unfilledFieldsTitle.textContent = 'Fields Not Found:';
+  unfilledFieldsTitle.style.marginTop = '10px';
+  unfilledFieldsTitle.style.fontWeight = 'bold';
+
+  for (const field of unfilledFields) {
+    const li = document.createElement('li');
+    li.textContent = field;
+    unfilledFieldsList.appendChild(li);
+  }
+
+  // Append elements to report content
+  reportContent.appendChild(svgContainer);
+  reportContent.appendChild(progressBarContainer);
+  reportContent.appendChild(successCountText);
+  if (filledFields.length > 0) {
+    reportContent.appendChild(filledFieldsTitle);
+    reportContent.appendChild(filledFieldsList);
+  }
+  if (unfilledFields.length > 0) {
+    reportContent.appendChild(errorText);
+    reportContent.appendChild(unfilledFieldsTitle);
+    reportContent.appendChild(unfilledFieldsList);
+  }
+
+  // Append minimize button and report content to report div
+  reportDiv.appendChild(minimizeButton);
+  reportDiv.appendChild(reportContent);
+
+  // Append to body
+  document.body.appendChild(reportDiv);
+}
 
   // Create the report
   createReport();
